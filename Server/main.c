@@ -12,6 +12,8 @@ Una pagina aggiuntiva deve essere dedicata ad un breve README con le istruzioni 
 - gli utenti possono accedere a stanze già create
 - il creatore della stanza deve poter accettare un utente che si vuole aggiungere alla stanza
 
+gcc main.c -l sqlite3 
+
 user
 - login x
 - signup x
@@ -27,19 +29,24 @@ logged_user
 
 */
 
-#define PORT 4200
+#define PORT 50000
 #define BUFFER_SIZE 1024
 
-#define MAX_QUERY_LEN 100
+#define MAX_QUERY_LEN 500
 #define MAX_QUEUE_LEN 100
 #define MAX_USERNAME_LEN 100
+#define MAX_GROUP_NAME_LEN 100
 #define MAX_PASSWORD_LEN 100
+#define MAX_MESSAGE_LEN 1000
+#define MAX_DATETIME_LEN 20
 
-#define DB_NAME ":memory:"
+#define DB_NAME "pino-roulet.db"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -49,9 +56,57 @@ logged_user
 
 #include <sqlite3.h>
 
-db_error(sqlite3 *db) {
+void err_sys(const char* x) { 
+    perror(x); 
+    exit(1); 
+}
+
+void db_error(sqlite3 *db) {
     fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
     sqlite3_close(db);
+}
+
+void my_recv(int connected_fd, char *buffer) {
+    bzero(buffer, BUFFER_SIZE);
+
+    printf("\tReceiving...\n"); fflush(stdout);
+
+    int bytes_recived = read(connected_fd, buffer, BUFFER_SIZE);
+    //buffer[bytes_recived-1] = '\0';
+
+    printf("\tReceived %s\n", buffer); fflush(stdout);
+}
+
+void my_send(int connected_fd, char *buffer) {
+    printf("\tSending %s\n", buffer); fflush(stdout);
+
+    int len = strlen(buffer);
+    //buffer[bytes_recived-1] = '\n'; buffer[bytes_recived] = '\0';
+    //buffer[len] = '\n'; buffer[len+1] = '\0';
+    write(connected_fd, buffer, strlen(buffer));
+
+    printf("\tSended %s\n", buffer); fflush(stdout);
+}
+
+int from_group_name_to_group_id(char *group_name) {
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "SELECT id FROM group_t WHERE group_name = '%s';", group_name);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
+
+    int ret = (int)sqlite3_column_int(result, 0);
+
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+    return ret;
 }
 
 int login(char *username, char *password) {
@@ -59,7 +114,7 @@ int login(char *username, char *password) {
     sqlite3_stmt *result;
 
     char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
-    sprintf(query, "SELECT COUNT(*) FROM user WHERE username = '%s' AND password = '%s';", username, password);
+    sprintf(query, "SELECT COUNT(*) FROM user_t WHERE username = '%s' AND pswd = '%s';", username, password);
 
     if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
 
@@ -68,7 +123,7 @@ int login(char *username, char *password) {
     if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
 
     int ret = (int)sqlite3_column_int(result, 0);
-    
+
     sqlite3_finalize(result);
     sqlite3_close(db);
 
@@ -76,34 +131,36 @@ int login(char *username, char *password) {
 }
 
 int signup(char *username, char *password) {
-    if ( login(username, password) != 0 ) {
-        printf("Account already exists!");
-        return 0;
-    }
-
-    // Missing the case in which the username is already used!
-
+    // TODO : Missing the case in which the username is already used!
     sqlite3 *db;
     sqlite3_stmt *result;
 
     char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
-    sprintf(query, "INSERT INTO user VALUE ('%s', '%s');", username, password);
+    sprintf(query, "INSERT INTO user_t VALUES ('%s', '%s');", username, password);
+
+    char *err_msg = NULL;
 
     if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
 
-    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+    //if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
 
-    if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
+    //if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
 
-    int ret = (int)sqlite3_column_int(result, 0);
+    //int ret = (int)sqlite3_column_int(result, 0);
+    if ( sqlite3_exec(db, query, 0, 0, &err_msg) != SQLITE_OK ) {
+        sqlite3_free(err_msg);
+        db_error(db);
+    }
     
-    sqlite3_finalize(result);
+    int ret = sqlite3_last_insert_rowid(db);
+
+    //sqlite3_finalize(result);
     sqlite3_close(db);
 
     return ret;
 }
 
-int createGroup(char *name, char *username) {
+void createGroup(char *name, char *username) {
     sqlite3 *db;
     sqlite3_stmt *result;
 
@@ -124,7 +181,7 @@ int createGroup(char *name, char *username) {
     sqlite3_close(db);
 }
 
-int addChat(char *username, int group_id) {
+void addChat(char *username, int group_id) {
     sqlite3 *db;
     sqlite3_stmt *result;
 
@@ -145,113 +202,278 @@ int addChat(char *username, int group_id) {
     sqlite3_close(db);
 }
 
-int acceptUser(char *admin_username, int group_id) {
+void acceptUser(char *admin_username, int group_id) {
     // Show every one queued to that group
 
     // Accept one
 }
 
-int sendMessage(char *sender, int group_id, char *actual_message) {
-    // Insert into
+int sendMessage(char *group_name, char *sender, char *actual_message, char *time) {
+    int group_id = from_group_name_to_group_id(group_name);
+
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "INSERT INTO message VALUES ('%s', %d, '%s', '%s');", sender, group_id, time, actual_message);
+    printf("\t%s\n", query); fflush(stdout);
+
+    char *err_msg = NULL;
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_exec(db, query, 0, 0, &err_msg) != SQLITE_OK ) {
+        sqlite3_free(err_msg);
+        db_error(db);
+    }
+    
+    int ret = sqlite3_last_insert_rowid(db);
+
+    sqlite3_close(db);
+    return ret;
 }
 
-int recvMessage(int group_id) {
+void recvMessage(int connected_fd, char *group_name, char *buffer) {
+    sqlite3 *db;
+    sqlite3_stmt *result;
 
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "SELECT message.sender, message.sent_time, message.actual_message FROM group_t INNER JOIN message ON group_t.id = message.group_id WHERE group_t.group_name = '%s' ORDER BY sent_time;", group_name);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    while (sqlite3_step(result) != SQLITE_DONE) {
+        my_recv(connected_fd, buffer);
+        sprintf(buffer, "%s\n", sqlite3_column_text(result, 0));
+        my_send(connected_fd, buffer);
+
+        my_recv(connected_fd, buffer);
+        sprintf(buffer, "%s\n", sqlite3_column_text(result, 1));
+        my_send(connected_fd, buffer);
+
+        my_recv(connected_fd, buffer);
+        sprintf(buffer, "%s\n", sqlite3_column_text(result, 2));
+        my_send(connected_fd, buffer);
+    }
+   
+    sqlite3_finalize(result);
+    sqlite3_close(db);
 }   
 
-void server(int connected_fd, struct sockaddr peer, int addr_len) {
+int howManyGroups(char *username) {
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "SELECT COUNT(*) FROM relation_group_user WHERE username = '%s';", username);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
+
+    int ret = (int)sqlite3_column_int(result, 0);
+
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+    return ret;
+}
+
+int howManyMessages(char *group_name) {
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "SELECT COUNT(*) FROM group_t INNER JOIN message ON group_t.id = message.group_id WHERE group_t.group_name = '%s' ORDER BY sent_time;", group_name);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
+
+    int ret = (int)sqlite3_column_int(result, 0);
+
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+    return ret;
+}
+
+void getGroups(int connected_fd, char *username, char *buffer) {
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query, "SELECT group_t.group_name FROM group_t INNER JOIN relation_group_user ON group_t.id = relation_group_user.group_id WHERE relation_group_user.username = '%s';", username);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    while (sqlite3_step(result) != SQLITE_DONE) {
+        my_recv(connected_fd, buffer);
+        sprintf(buffer, "%s\n", sqlite3_column_text(result, 0));
+        my_send(connected_fd, buffer);
+    }
+   
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+}
+
+void server(int connected_fd, struct sockaddr peer, unsigned int addr_len) {
     char buffer[BUFFER_SIZE];
-    int bytes_recived;
 
     char username[MAX_USERNAME_LEN];
     char password[MAX_PASSWORD_LEN];
+    char group_name[MAX_GROUP_NAME_LEN];
+    char message[MAX_MESSAGE_LEN];
+    char datetime[MAX_DATETIME_LEN];
 
-    while (1) {
-        bzero(buffer, sizeof(buffer) * BUFFER_SIZE);
+    printf("\n --- Server is serving --- \n"); fflush(stdout);
+
+    int bytes_recived;
+
+    my_recv(connected_fd, buffer);
+    my_send(connected_fd, buffer);
+
+    if ( strcmp(buffer, "login\n") == 0 ) {
+        printf("\tExecuting login\n"); fflush(stdout);
+
+        my_recv(connected_fd, buffer);
+        strcpy(username, buffer);
+        username[strlen(username)-1] = '\0';
+        my_send(connected_fd, "username ok\n");
+
+        my_recv(connected_fd, buffer);
+        strcpy(password, buffer);
+        password[strlen(password)-1] = '\0';
+        my_send(connected_fd, "password ok\n");
+
+        if ( login(username, password) ) {
+            my_recv(connected_fd, buffer);
+            my_send(connected_fd, "login ok");
+        } else {
+            my_recv(connected_fd, buffer);
+            my_send(connected_fd, "login not ok");
+        }
+    }
+
+    if ( strcmp(buffer, "signup\n") == 0 ) {
+        printf("\tExecuting signup\n"); fflush(stdout);
+
+        my_recv(connected_fd, buffer);
+        strcpy(username, buffer);
+        username[strlen(username)-1] = '\0';
+        my_send(connected_fd, "username ok\n");
+
+        my_recv(connected_fd, buffer);
+        strcpy(password, buffer);
+        password[strlen(password)-1] = '\0';
+        my_send(connected_fd, "password ok\n");
+
+        if ( signup(username, password) ) {
+            my_recv(connected_fd, buffer);
+            my_send(connected_fd, "signup ok");
+        } else {
+            my_recv(connected_fd, buffer);
+            my_send(connected_fd, "signup not ok");
+        }
+    }
+
+    if ( strcmp(buffer, "getGroups\n") == 0 ) {
+        printf("\tExecuting getGroups\n"); fflush(stdout);
+
+        my_recv(connected_fd, buffer);
+        strcpy(username, buffer);
+        username[strlen(username)-1] = '\0';
+
+        int x = howManyGroups(username);
+        sprintf(buffer, "%d\n", x);
+        my_send(connected_fd, buffer);
+
+        getGroups(connected_fd, username, buffer);
+    }
+
+    if ( strcmp(buffer, "createGroup") == 0 ) {
         bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
         buffer[bytes_recived] = '\0';
 
-        if ( strcmp(buffer, "login") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            stpcpy(username, buffer);
+        createGroup(buffer, username);
+        // Send something back
+    }
 
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            stpcpy(password, buffer);
+    if ( strcmp(buffer, "addChat") == 0 ) {
+        bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
+        buffer[bytes_recived] = '\0';
 
-            login(username, password);
-            // Send something back
-        }
+        addChat(username, atoi(buffer));
+        // Send something back
+    }
 
-        if ( strcmp(buffer, "signup") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            stpcpy(username, buffer);
+    if ( strcmp(buffer, "acceptUser") == 0 ) {
+        bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
+        buffer[bytes_recived] = '\0';
 
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            stpcpy(password, buffer);
+        // acceptUser(username, buffer);
+        // Send something back
+    }
 
-            signup(username, password);
-            // Send something back
-        }
+    if ( strcmp(buffer, "sendMessage\n") == 0 ) {
+        printf("\tExecuting sendMessage\n"); fflush(stdout);
 
-        if ( strcmp(buffer, "createGroup") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
+        my_recv(connected_fd, buffer);
+        strcpy(group_name, buffer);
+        group_name[strlen(group_name)-1] = '\0';
+        my_send(connected_fd, "group name ok\n");
 
-            createGroup(buffer, username);
-            // Send something back
-        }
+        my_recv(connected_fd, buffer);
+        strcpy(username, buffer);
+        username[strlen(username)-1] = '\0';
+        my_send(connected_fd, "username ok\n");
 
-        if ( strcmp(buffer, "addChat") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
+        my_recv(connected_fd, buffer);
+        strcpy(message, buffer);
+        message[strlen(message)-1] = '\0';
+        my_send(connected_fd, "message ok\n");
 
-            addChat(username, atoi(buffer));
-            // Send something back
-        }
+        my_recv(connected_fd, buffer); // DA QUI NON VA PIU'
+        //strcpy(datetime, buffer); printf("CI SONO ARRIVATO"); fflush(stdout);
+        //datetime[strlen(datetime)-1] = '\0'; printf("CI SONO ARRIVATO"); fflush(stdout);
+        buffer[strlen(buffer)-1] = '\0';
+        my_send(connected_fd, "time ok\n"); printf("CI SONO ARRIVATO"); fflush(stdout);
 
-        if ( strcmp(buffer, "acceptUser") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-
-            acceptUser(username, buffer);
-            // Send something back
-        }
-
-        if ( strcmp(buffer, "sendMessage") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            int group_id = atoi(buffer);
-
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-
-            sendMessage(username, group_id, buffer);
-            // Send something back
-        }
+        sendMessage(group_name, username, message, buffer);
+    }
             
 
-        if ( strcmp(buffer, "recvMessage") == 0 ) {
-            bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
-            buffer[bytes_recived] = '\0';
-            int group_id = atoi(buffer);
+    if ( strcmp(buffer, "recvMessage\n") == 0 ) {
+        printf("\tExecuting recvMessage\n"); fflush(stdout);
 
-            recvMessage(group_id);
-            // Send something back
-        }
+        my_recv(connected_fd, buffer);
+        buffer[strlen(buffer)-1] = '\0';
+        strcpy(group_name, buffer);
+
+        int group_id = howManyMessages(group_name);
+        sprintf(buffer, "%d\n", group_id);
+        my_send(connected_fd, buffer);
+
+        recvMessage(connected_fd, group_name, buffer);
     }
 }
 
 int main(int argc, char *argv[]){
-    int listen_fd, connected_fd, addr_len;
+    int listen_fd, connected_fd;
+    unsigned int addr_len;
     struct sockaddr_in servaddr;
     struct sockaddr peer;
 
     // Questa system-call serve ad instanziare un nuovo descrittore di socket.
-    printf("Creating the socket...");
+    printf("Creating the socket...\n"); fflush(stdout);
     if ( (listen_fd = socket(AF_INET, SOCK_STREAM, 0) ) < 0 ) 
         err_sys("socket error");
 
@@ -260,12 +482,12 @@ int main(int argc, char *argv[]){
     servaddr.sin_addr.s_addr = htons(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
     
-    printf("Binding the socket...");
+    printf("Binding the socket...\n"); fflush(stdout);
     // Questa system-call serve ad assegnare un indirizzo locale (name) ad una socket.
     if ( bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0 ) 
         err_sys("bind error");
     
-    printf("Listening...");
+    printf("Listening...\n"); fflush(stdout);
     // Attraverso la chiamata listen(), un server manifesta la sua volontà di apprestarsi a ricevere connessioni.
     if ( listen(listen_fd, MAX_QUEUE_LEN) < 0 ) 
         err_sys("listen error");
@@ -273,12 +495,12 @@ int main(int argc, char *argv[]){
     int current_iteration = 0;
     while (1) {
         // Dopo la chiamata listen(), un server si mette realmente in attesa di connessioni attraverso una chiamata ad accept().
-        printf("Accepting a connection...");
+        printf("Accepting a connection...\n"); fflush(stdout);
         bzero(&peer, sizeof(peer));
         connected_fd = accept(listen_fd, &peer, &addr_len);
         if ( connected_fd < 0 )
-            err_sys("accept error at iteration %d", current_iteration);
-
+            err_sys("accept error"); 
+        printf("Accepted a connection\n"); fflush(stdout);
         // Dopo l’accept() il descrittore connected_fd ha la quintupla tutta impostata, ed è pronto ad essere utilizzato.
         // La quintupla è (protocol, local-addr, local-process, foreign-addr, foreign-process)
 
