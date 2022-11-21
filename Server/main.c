@@ -15,8 +15,8 @@ Una pagina aggiuntiva deve essere dedicata ad un breve README con le istruzioni 
 gcc main.c -l sqlite3 
 
 user
-- login x
-- signup x
+- login
+- signup
 
 group_admin
 - createGroup x
@@ -130,11 +130,74 @@ int login(char *username, char *password) {
     return ret;
 }
 
-int signup(char *username, char *password) {
-    // TODO : Missing the case in which the username is already used!
+int check_signup(char* username){
     sqlite3 *db;
     sqlite3_stmt *result;
 
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query1, "SELECT COUNT(username) FROM user_t WHERE username='%s';", username);
+
+    int ret = (int)sqlite3_column_int(result, 0);
+
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+    return ret;
+
+}
+
+int signup_v2(char* username,char *password){
+    sqlite3 *db;
+    sqlite3_stmt *result;
+    int flag= check_signup(username);
+    if (flag == 0){
+        char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+        sprintf(query, "INSERT INTO user_t VALUES ('%s', '%s');", username, password);
+
+        char *err_msg = NULL;
+
+        if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+        //if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+        //if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
+
+        //int ret = (int)sqlite3_column_int(result, 0);
+        if ( sqlite3_exec(db, query, 0, 0, &err_msg) != SQLITE_OK ) {
+            sqlite3_free(err_msg);
+            db_error(db);
+        }
+
+        ret = sqlite3_last_insert_rowid(db);
+
+        //sqlite3_finalize(result);
+        sqlite3_close(db);
+        return ret;
+    }
+    return -1;
+}
+
+/*int signup(char *username, char *password) {
+    // TODO : Missing the case in which the username is already used!
+
+    sqlite3 *db;
+    sqlite3_stmt *result;
+    int ret=0
+    char *query1 = malloc(sizeof(char) * MAX_QUERY_LEN);
+    do {
+        sprintf(query1, "SELECT COUNT(username) FROM user_t WHERE username='%s';", username);
+
+        //insert ERROR here
+
+       ret=sqlite3_collumn_int(result,0);
+
+        if (ret > 0) {
+            printf("Utente gia esistente,prego provare con un altro username:\n");
+            scanf("%s",username);
+        }
+
+    }while(ret > 0);
+
+    sqlite3_finalize(result); // check if have to reinitialize it before calling a new query
     char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
     sprintf(query, "INSERT INTO user_t VALUES ('%s', '%s');", username, password);
 
@@ -152,13 +215,13 @@ int signup(char *username, char *password) {
         db_error(db);
     }
     
-    int ret = sqlite3_last_insert_rowid(db);
+    ret = sqlite3_last_insert_rowid(db);
 
     //sqlite3_finalize(result);
     sqlite3_close(db);
-
     return ret;
 }
+ */
 
 void createGroup(char *name, char *username) {
     sqlite3 *db;
@@ -202,11 +265,52 @@ void addChat(char *username, int group_id) {
     sqlite3_close(db);
 }
 
-void acceptUser(char *admin_username, int group_id) {
+char* showUsers(int group_id) {
     // Show every one queued to that group
+    sqlite3 *db;
+    sqlite3_stmt *result;
 
-    // Accept one
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query,"SELECT username FROM queue_for_group WHERE group_id= %d ;",group_id);
+    //Errori
+
+    char* lista= malloc(sizeof (char) * MAX_QUERY_LEN)
+    lista=(char*) result;
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+    return lista;//forse meglio char** provare...
+
 }
+
+void Remove_from_Group(char* username, int group_id){
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query,"DELETE FROM queue_for_group WHERE user = '%s' AND id_group = %d;",username,group_id);
+    //Errori
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+
+}
+
+void Add_to_Group(char* username, int group_id){
+    sqlite3 *db;
+    sqlite3_stmt *result;
+
+    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
+    sprintf(query,"INSERT INTO relation_group_user(group_id,username) VALUES (%d,'%s');",group_id,username);
+    //Errori
+    Remove_from_Group(username,group_id); //check if possible with connection
+    sqlite3_finalize(result);
+    sqlite3_close(db);
+
+}
+
+
+
 
 int sendMessage(char *group_name, char *sender, char *actual_message, char *time) {
     int group_id = from_group_name_to_group_id(group_name);
@@ -411,9 +515,10 @@ void server(int connected_fd, struct sockaddr peer, unsigned int addr_len) {
         bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
         buffer[bytes_recived] = '\0';
 
-        addChat(username, atoi(buffer));
+        addChat(username, atoi(buffer)); // va rifatto
         // Send something back
     }
+    // va aggiunto il Remove_from_Group
 
     if ( strcmp(buffer, "acceptUser") == 0 ) {
         bytes_recived = recvfrom(connected_fd, buffer, BUFFER_SIZE, 0, &peer, &addr_len);
