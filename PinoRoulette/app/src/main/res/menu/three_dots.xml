@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    >
+    <item
+
+        android:id="@+id/item_Create_Group"
+        android:onClick=""
+        android:title="Create Group">
+    </item>
+    <item
+    android:id="@+id/item2"
+    android:title="Enter Group">
+</item>
+    <item
+        android:id="@+id/item3"
+        android:title="My Groups">
+    </item>
+</menu>
