@@ -117,7 +117,13 @@ int check_signup(char* username){
     sqlite3_stmt *result;
 
     char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
-    sprintf(query, "SELECT COUNT(username) FROM user_t WHERE username='%s';", username);
+    sprintf(query, "SELECT COUNT(*) FROM user_t WHERE username='%s';", username);
+
+    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
+
+    if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
 
     int ret = (int)sqlite3_column_int(result, 0);
 
@@ -126,88 +132,34 @@ int check_signup(char* username){
     free(query);
 
     return ret;
-
 }
 
 int signup_v2(char* username,char *password){
     sqlite3 *db;
     sqlite3_stmt *result;
-    int flag= check_signup(username);
-    if (flag == 0){
+    int ret = 0;
+
+    if (check_signup(username) == 0){
         char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
         sprintf(query, "INSERT INTO user_t VALUES ('%s', '%s');", username, password);
-
-        char *err_msg = NULL;
-
+    
         if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
 
-        //if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
-
-        //if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
-
-        //int ret = (int)sqlite3_column_int(result, 0);
+        char *err_msg = NULL;
         if ( sqlite3_exec(db, query, 0, 0, &err_msg) != SQLITE_OK ) {
+            fprintf(stderr, "SQL error: %s\n", err_msg);
+
             sqlite3_free(err_msg);
-            db_error(db);
+            sqlite3_close(db);
         }
 
-       int ret = sqlite3_last_insert_rowid(db);
-
-        //sqlite3_finalize(result);
+        ret = sqlite3_last_insert_rowid(db);
+    
         sqlite3_close(db);
         free(query);
-        return ret;
     }
-    return -1;
-}
-
-/*
-int signup(char *username, char *password) {
-    // TODO : Missing the case in which the username is already used!
-
-    sqlite3 *db;
-    sqlite3_stmt *result;
-    int ret=0;
-    char *query1 = malloc(sizeof(char) * MAX_QUERY_LEN);
-    do {
-        sprintf(query1, "SELECT COUNT(username) FROM user_t WHERE username='%s';", username);
-
-        //insert ERROR here
-
-       ret=sqlite3_collumn_int(result,0);
-
-        if (ret > 0) {
-            printf("Utente gia esistente,prego provare con un altro username:\n");
-            scanf("%s",username);
-        }
-
-    }while(ret > 0);
-
-    sqlite3_finalize(result); // check if have to reinitialize it before calling a new query
-    char *query = malloc(sizeof(char) * MAX_QUERY_LEN);
-    sprintf(query, "INSERT INTO user_t VALUES ('%s', '%s');", username, password);
-
-    char *err_msg = NULL;
-
-    if ( sqlite3_open(DB_NAME, &db) != SQLITE_OK ) db_error(db);
-
-    //if ( sqlite3_prepare_v2(db, query, -1, &result, 0) != SQLITE_OK ) db_error(db);
-
-    //if ( sqlite3_step(result) != SQLITE_ROW ) db_error(db);
-
-    //int ret = (int)sqlite3_column_int(result, 0);
-    if ( sqlite3_exec(db, query, 0, 0, &err_msg) != SQLITE_OK ) {
-        sqlite3_free(err_msg);
-        db_error(db);
-    }
-
-    ret = sqlite3_last_insert_rowid(db);
-
-    //sqlite3_finalize(result);
-    sqlite3_close(db);
     return ret;
-}*/
- 
+}
 
 int createGroup(char *name, char *username) {
     sqlite3 *db;
