@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#033B67"
     tools:context=".Menu">
-
+    
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="176dp"
