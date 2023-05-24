@@ -10,35 +10,32 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="174dp"
-        android:layout_height="138dp"
-        android:layout_marginStart="3dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/list_groups"
-        app:layout_constraintEnd_toStartOf="@+id/textView3"
+        android:layout_width="154dp"
+        android:layout_height="129dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="LOGO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/martinitt"
-        android:contentDescription="LOGO" />
+        app:srcCompat="@drawable/martinitt" />
 
     <ListView
         android:id="@+id/list_groups"
-        android:layout_width="403dp"
-        android:layout_height="572dp"
+        android:layout_width="349dp"
+        android:layout_height="427dp"
+        android:layout_marginTop="24dp"
         android:isScrollContainer="true"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <EditText
         android:id="@+id/textView3"
-        android:layout_width="0dp"
-        android:layout_height="69dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="6dp"
-        android:layout_marginBottom="47dp"
+        android:layout_width="216dp"
+        android:layout_height="67dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="24dp"
         android:autofillHints=""
         android:ems="10"
         android:fontFamily="cursive"
@@ -47,9 +44,11 @@
         android:textAlignment="inherit"
         android:textColor="#009688"
         android:textSize="6mm"
-        app:layout_constraintBottom_toTopOf="@+id/list_groups"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:focusable="false"
+        android:clickable="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
