@@ -12,8 +12,8 @@
         android:id="@+id/imageView"
         android:layout_width="154dp"
         android:layout_height="129dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:contentDescription="LOGO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -21,23 +21,25 @@
 
     <ListView
         android:id="@+id/list_groups"
-        android:layout_width="349dp"
-        android:layout_height="427dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="360dp"
+        android:layout_height="558dp"
+        android:layout_marginTop="32dp"
         android:isScrollContainer="true"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.49"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <EditText
         android:id="@+id/textView3"
-        android:layout_width="216dp"
-        android:layout_height="67dp"
-        android:layout_marginStart="1dp"
+        android:layout_width="184dp"
+        android:layout_height="61dp"
         android:layout_marginTop="68dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="16dp"
         android:autofillHints=""
+        android:clickable="false"
         android:ems="10"
+        android:focusable="false"
         android:fontFamily="cursive"
         android:inputType="textPersonName"
         android:text="PinoRoulette"
@@ -45,9 +47,8 @@
         android:textColor="#009688"
         android:textSize="6mm"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.545"
         app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent"
-        android:focusable="false"
-        android:clickable="false"/>
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
