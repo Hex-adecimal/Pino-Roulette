@@ -4,13 +4,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#033B67"
     tools:context=".PendingList">
 
     <!-- xxx -->
+
     <ListView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/listview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="364dp"
+        android:layout_height="603dp"
+        android:layout_marginTop="48dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.489"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView2"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="143dp"
+        android:layout_height="133dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:contentDescription="LOGO"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/martinitt" />
+
+    <EditText
+        android:id="@+id/textView3"
+        android:layout_width="182dp"
+        android:layout_height="71dp"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="16dp"
+        android:autofillHints=""
+        android:clickable="false"
+        android:ems="10"
+        android:focusable="false"
+        android:fontFamily="cursive"
+        android:inputType="textPersonName"
+        android:text="PinoRoulette"
+        android:textAlignment="inherit"
+        android:textColor="#009688"
+        android:textSize="6mm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.333"
+        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

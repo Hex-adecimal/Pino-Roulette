@@ -5,69 +5,75 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#033B67"
-    tools:context=".CreateGroup">
+    tools:context=".CreateGroup"
+    >
 
     <EditText
         android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="217dp"
+        android:layout_width="171dp"
+        android:layout_height="98dp"
         android:autofillHints=""
         android:ems="10"
         android:fontFamily="cursive"
-        android:inputType="textPersonName"
+        android:inputType="none"
         android:text="PinoRoulette"
         android:textAlignment="inherit"
         android:textColor="#009688"
         android:textSize="6mm"
-
-        app:layout_constraintBottom_toTopOf="@+id/btn_sbmt"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.891"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.09"
+        android:focusable="false"
+        android:clickable="false"
+        />
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="218dp"
-        android:layout_height="162dp"
-        android:layout_marginTop="9dp"
-        android:layout_marginBottom="53dp"
+        android:layout_width="179dp"
+        android:layout_height="147dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="56dp"
         app:layout_constraintBottom_toTopOf="@+id/edt_group_name"
         app:layout_constraintEnd_toStartOf="@+id/title"
+        app:layout_constraintHorizontal_bias="0.842"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.289"
         app:srcCompat="@drawable/martinitt" />
 
     <EditText
         android:id="@+id/edt_group_name"
         android:layout_width="343dp"
         android:layout_height="52dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginTop="56dp"
+        android:autofillHints=""
         android:hint="Enter group's name"
         android:minHeight="48dp"
         android:textColorHint="#BCFFFFFF"
-        app:layout_constraintBottom_toTopOf="@+id/btn_sbmt"
-        app:layout_constraintEnd_toEndOf="@+id/btn_sbmt"
-        app:layout_constraintStart_toStartOf="@+id/btn_sbmt"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        android:autofillHints="" />
-
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintVertical_bias="0.044"
+        android:inputType="none" />
 
     <Button
         android:id="@+id/btn_sbmt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/edt_group_name"
-        android:layout_marginEnd="13dp"
-        android:layout_marginBottom="342dp"
+        android:layout_marginTop="24dp"
         android:text="create"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintHorizontal_bias="0.862"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edt_group_name"
+        app:layout_constraintVertical_bias="0.0"
         tools:ignore="HardcodedText" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

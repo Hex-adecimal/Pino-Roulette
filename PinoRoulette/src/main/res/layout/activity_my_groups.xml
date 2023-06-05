@@ -10,45 +10,50 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="174dp"
-        android:layout_height="138dp"
-        android:layout_marginStart="3dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/list_groups"
-        app:layout_constraintEnd_toStartOf="@+id/textView3"
+        android:layout_width="154dp"
+        android:layout_height="129dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:contentDescription="LOGO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/martinitt"
-        android:contentDescription="LOGO" />
+        app:srcCompat="@drawable/martinitt" />
 
-    <ListView
-        android:id="@+id/list_groups"
-        android:layout_width="403dp"
-        android:layout_height="572dp"
-        android:isScrollContainer="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/imageView"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ListView
+            android:id="@+id/list_groups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:isScrollContainer="true" />
+
+    </LinearLayout>
 
     <EditText
         android:id="@+id/textView3"
-        android:layout_width="0dp"
-        android:layout_height="69dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="6dp"
-        android:layout_marginBottom="47dp"
+        android:layout_width="184dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="16dp"
         android:autofillHints=""
+        android:clickable="false"
         android:ems="10"
+        android:focusable="false"
         android:fontFamily="cursive"
         android:inputType="textPersonName"
         android:text="PinoRoulette"
         android:textAlignment="inherit"
         android:textColor="#009688"
         android:textSize="6mm"
-        app:layout_constraintBottom_toTopOf="@+id/list_groups"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.545"
         app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="parent" />
 

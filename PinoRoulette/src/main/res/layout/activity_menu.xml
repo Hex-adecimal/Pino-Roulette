@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,90 +9,88 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="193dp"
-        android:layout_height="149dp"
-        android:layout_marginStart="3dp"
-        android:layout_marginTop="7dp"
-        app:layout_constraintEnd_toStartOf="@+id/textView3"
+        android:layout_width="104dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="28dp"
+        android:contentDescription="LOGO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/martinitt"
-        android:contentDescription="LOGO"
-        tools:ignore="HardcodedText">
-
-    </ImageView>
+        tools:ignore="HardcodedText" />
 
     <EditText
         android:id="@+id/textView3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="6dp"
-        android:layout_marginBottom="46dp"
+        android:layout_width="199dp"
+        android:layout_height="93dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="16dp"
+        android:clickable="false"
         android:ems="10"
+        android:focusable="false"
         android:fontFamily="cursive"
-        android:inputType="textPersonName"
+        android:inputType="none"
         android:text="PinoRoulette"
         android:textAlignment="inherit"
         android:textColor="#009688"
         android:textSize="6mm"
-        app:layout_constraintBottom_toTopOf="@+id/btn_Join_Group"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.296"
         app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="Autofill, HardcodedText"/>
+        tools:ignore="Autofill,HardcodedText,InOrMmUsage" />
 
     <Button
         android:id="@+id/btn_Create_Group"
-        android:layout_width="0dp"
-        android:layout_height="53dp"
+        android:layout_width="118dp"
+        android:layout_height="64dp"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="11dp"
+        android:layout_marginTop="32dp"
         android:hint="Create Group"
         android:textColor="@color/black"
         android:textColorHint="#E1BEE7"
-        app:layout_constraintBaseline_toBaselineOf="@+id/btn_My_Groups"
-        app:layout_constraintEnd_toStartOf="@+id/btn_My_Groups"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
         tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/btn_Join_Group"
-        android:layout_width="117dp"
-        android:layout_height="55dp"
+        android:layout_width="112dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="32dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="520dp"
         android:hint="Join Group"
         android:textColorHint="#E1BEE7"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btn_My_Groups"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
         tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/btn_My_Groups"
-        android:layout_width="113dp"
-        android:layout_height="55dp"
-        android:layout_marginEnd="11dp"
-        android:layout_marginBottom="516dp"
+        android:layout_width="109dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="32dp"
         android:hint="My Groups"
         android:textColorHint="#E1BEE7"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btn_Join_Group"
+        app:layout_constraintHorizontal_bias="0.425"
         app:layout_constraintStart_toEndOf="@+id/btn_Create_Group"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
         tools:ignore="HardcodedText" />
 
-    <ListView
-        android:id="@+id/list_chat"
-        android:layout_width="400dp"
-        android:layout_height="498dp"
-        android:isScrollContainer="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.882" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/btn_My_Groups"
+        app:layout_constraintBottom_toBottomOf="parent">
 
+        <ListView
+            android:id="@+id/list_chat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:isScrollContainer="true" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
