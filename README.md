@@ -6,6 +6,8 @@ Il componente server è implementato nel linguaggio di programmazione C, utilizz
 Lato client, è stata sviluppata un'applicazione Android per interagire con il server. L'applicazione client offre un'interfaccia utente intuitiva che consente agli utenti di visualizzare e inviare messaggi, accedere e creare gruppi. Attraverso l'app client, gli utenti possono avviare trasferimenti di dati, richiedere operazioni lato server e interagire con il server in tempo reale.
 
 ## Usage
+Prima di tutto bisogna assicurarsi di avere il database 'pino-roulette.db' all'interno della cartella dove si trova il server. In alternativa è possibile copiare il contentuo del file 'sample.sql' all'interno di Visual Studio Code, scaricare l'estensione 'SQLite', e cliccare command + P e successivamente '>'. Poi potremmo eseguire le query. Per poter selezionare un database su cui eseguire le query, è possibile farlo in basso a destra, di default dovrebbe esserci scritto 'SQLite:memory:'. 
+
 Per usare il progetto seguire questi passi:
 - Eseguire il comando 'gcc server.c -l sqlite3' per ottenere l'eseguibile 'a.out';
 - Eseguire 'a.out' tramite il comando './a.out';
